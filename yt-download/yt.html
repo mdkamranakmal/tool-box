@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<link rel="stylesheet" href="yt.css">
+<body>
+  <div class="container">
+    <h1>🎬 YouTube Premium Downloader</h1>
+    <div class="input-group">
+      <input type="text" id="urlInput" placeholder="Paste YouTube URL here...">
+      <button onclick="loadVideo()">Load</button>
+    </div>
+
+    <div class="options">
+      <label for="quality">Choose Quality:</label>
+      <select id="quality">
+        <option value="144p">144p MP4</option>
+        <option value="360p">360p MP4</option>
+        <option value="720p">720p MP4</option>
+        <option value="1080p">1080p MP4</option>
+        <option value="mp3">MP3 (Audio)</option>
+      </select>
+    </div>
+
+    <div class="video-preview" id="previewBox">
+      <iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe>
+      <button class="download-btn" onclick="downloadVideo()">⬇ Download</button>
+    </div>
+  </div>
+  <script src="yt.js"></script>
+</body>
+</html>
