@@ -1,0 +1,214 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+  transition: 0.3s;
+}
+
+/* Navbar */
+nav {
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  border-bottom: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+nav .logo {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+nav ul li a:hover {
+  color: #007bff;
+}
+
+/* Dark Mode Button */
+#darkModeToggle {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.hero h1 {
+  font-size: 36px;
+  margin-bottom: 15px;
+}
+
+.hero p {
+  max-width: 600px;
+  margin: 0 auto;
+  color: #555;
+  font-size: 16px;
+}
+
+/* Cards Section */
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.card {
+  background: #fff;
+  padding: 25px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.3s, background 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card i {
+  font-size: 35px;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.card p {
+  color: #666;
+  font-size: 14px;
+}
+
+/* CTA */
+.cta {
+  background: #fff;
+  padding: 40px 20px;
+  margin: 40px auto;
+  max-width: 900px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: background 0.3s;
+}
+
+.cta h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.cta p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.cta button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cta button:hover {
+  background: #0056b3;
+}
+
+/* Dark Mode */
+body.dark {
+  background: #1e1e1e;
+  color: #f9f9f9;
+}
+
+body.dark nav {
+  background: #2a2a2a;
+  border-bottom: 1px solid #444;
+}
+
+body.dark nav ul li a {
+  color: #f9f9f9;
+}
+
+body.dark #darkModeToggle {
+  color: #f9f9f9;
+}
+
+body.dark .card {
+  background: #2a2a2a;
+  color: #f9f9f9;
+}
+
+body.dark .card p {
+  color: #ddd;
+}
+
+body.dark .cta {
+  background: #2a2a2a;
+  color: #f9f9f9;
+}
+
+body.dark .cta p {
+  color: #ddd;
+}
+
+.tools a {
+  text-decoration: none;   /* underline hatata hai */
+  color: inherit;          /* parent ka color use karega */
+  display: block;          /* poora card clickable ho jayega */
+}
+
+.tools a:hover .card {
+  transform: scale(1.02);  /* hover effect for premium feel */
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  nav {
+    padding: 15px 20px;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .tools {
+    padding: 20px;
+  }
+}
