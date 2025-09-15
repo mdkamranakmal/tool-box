@@ -9,69 +9,84 @@
 <body>
    <div class="container">
         <div class="header">
-            <h1>🎥 YouTube Downloader</h1>
-            <p>Download your favorite YouTube videos instantly</p>
+            <h1>🎥 YouTube Downloader Pro</h1>
+            <p>Download YouTube videos instantly - No registration, No cookies required!</p>
+            <div class="features">
+                <div class="feature-tag">⚡ Lightning Fast</div>
+                <div class="feature-tag">🔐 100% Private</div>
+                <div class="feature-tag">📱 Mobile Friendly</div>
+                <div class="feature-tag">🆓 Completely Free</div>
+            </div>
         </div>
 
         <div class="input-group">
-            <label for="urlInput">📎 YouTube URL</label>
-            <input type="text" id="urlInput" placeholder="Paste YouTube URL here..." />
+            <div class="url-input-container">
+                <input type="text" class="url-input" id="urlInput" 
+                       placeholder="Paste YouTube URL here (e.g., https://youtube.com/watch?v=...)" />
+                <button class="paste-btn" onclick="pasteFromClipboard()">📋 Paste</button>
+            </div>
         </div>
 
         <div id="status" class="status"></div>
 
-        <div class="input-group">
-            <label for="quality">🎯 Download Quality</label>
-            <select id="quality">
-                <option value="mp4">🎬 Video (MP4) - Best Quality</option>
-                <option value="mp3">🎵 Audio Only (MP3) - 192kbps</option>
-            </select>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn btn-secondary" onclick="loadVideo()">
-                👀 Preview Video
-            </button>
-            <button class="btn btn-primary" onclick="downloadVideo()">
-                ⬇️ Download Now
-            </button>
-        </div>
-
-        <div class="progress-bar" id="progressBar">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-
-        <div id="previewBox" class="preview-box">
-            <iframe id="videoFrame" class="video-frame"></iframe>
-            <div id="videoInfo" class="video-info"></div>
-        </div>
-
-        <div id="cookieUpload" class="cookie-upload">
-            <h3>🍪 Authentication Required</h3>
-            <p>This video is private or age-restricted. Please upload your cookies.txt file to access it:</p>
+        <div class="format-selector">
+            <label class="format-option selected" for="mp4-option">
+                <input type="radio" id="mp4-option" name="format" value="mp4" checked>
+                <span class="format-icon">🎬</span>
+                <div class="format-title">Video (MP4)</div>
+                <div class="format-desc">Download with video and audio</div>
+            </label>
             
-            <div class="file-input-wrapper">
-                <input type="file" id="cookieFile" class="file-input" accept=".txt" />
-                <div class="file-input-button">
-                    📁 Choose cookies.txt file
+            <label class="format-option" for="mp3-option">
+                <input type="radio" id="mp3-option" name="format" value="mp3">
+                <span class="format-icon">🎵</span>
+                <div class="format-title">Audio Only (MP3)</div>
+                <div class="format-desc">Extract audio in high quality</div>
+            </label>
+        </div>
+
+        <button class="btn btn-primary" onclick="processVideo()" id="downloadBtn">
+            🚀 Download Now
+        </button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Preparing download...</div>
+        </div>
+
+        <div id="videoPreview" class="video-preview">
+            <img id="videoThumbnail" class="video-thumbnail" alt="Video thumbnail" />
+            <div class="video-info">
+                <h3 id="videoTitle"></h3>
+                <div class="video-meta">
+                    <div class="meta-item">
+                        <span>👤</span>
+                        <span id="videoUploader"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        <span id="videoDuration"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span>👀</span>
+                        <span id="videoViews"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span id="videoDate"></span>
+                    </div>
                 </div>
             </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-primary" onclick="uploadCookies()">
-                    📤 Upload Cookies
-                </button>
-                <button class="btn btn-secondary" onclick="showCookieInstructions()">
-                    ❓ How to get cookies?
-                </button>
-                <button class="btn btn-danger" onclick="deleteCookies()" id="deleteCookieBtn" style="display:none;">
-                    🗑️ Delete Cookies
-                </button>
-            </div>
+        </div>
+
+        <div class="disclaimer">
+            <strong>📜 Disclaimer:</strong> This tool is for personal use only. Please respect copyright laws and YouTube's terms of service. Only download videos you have permission to download.
         </div>
 
         <div class="footer">
-            <p>⚡ Powered by yt-dlp | 🔒 Your data stays private</p>
+            <p>⚡ Powered by advanced yt-dlp technology | 🔒 No data stored on our servers</p>
         </div>
     </div>
 

@@ -1,90 +1,58 @@
- // 🌐 Backend URL
-        const BACKEND_URL = "https://tool-box-backend.onrender.com";
+const BACKEND_URL = "https://tool-box-backend.onrender.com";
 
-        // 🍪 Cookie management
-        let cookieId = localStorage.getItem('ytd_cookie_id');
-        
-        // Update delete button visibility on load
-        if (cookieId) {
-            document.getElementById('deleteCookieBtn').style.display = 'inline-flex';
-            showStatus("🍪 Using saved authentication cookies", "info");
-        }
+        // Format option selection
+        document.querySelectorAll('.format-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.format-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                option.querySelector('input').checked = true;
+            });
+        });
 
-        // 🎥 Get YouTube Video ID from URL
-        function getVideoId(url) {
-            let regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/;
-            let match = url.match(regExp);
-            return (match && match[2].length == 11) ? match[2] : null;
-        }
-
-        // 🎥 Preview Video in iframe
-        function loadVideo() {
-            let url = document.getElementById("urlInput").value.trim();
-            if (!url) {
-                alert("❌ Please enter a YouTube URL!");
-                return;
-            }
-
-            let videoId = getVideoId(url);
-            if (videoId) {
-                let iframe = document.getElementById("videoFrame");
-                iframe.src = "https://www.youtube.com/embed/" + videoId;
-                document.getElementById("previewBox").style.display = "block";
-                
-                // Check URL validity with backend
-                checkVideoUrl(url);
-            } else {
-                alert("❌ Invalid YouTube URL! Please check the link.");
-            }
-        }
-
-        // 🔍 Check Video URL before downloading
-        async function checkVideoUrl(url) {
+        // Paste from clipboard
+        async function pasteFromClipboard() {
             try {
-                showStatus("🔍 Checking video availability...", "info");
-                
-                let response = await fetch(`${BACKEND_URL}/api/check_url`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        url: url,
-                        cookie_id: cookieId,
-                        user_id: "web_user"
-                    })
-                });
-                
-                let result = await response.json();
-                
-                if (result.valid) {
-                    showStatus(`✅ Video found: ${result.title}`, "success");
-                    displayVideoInfo(result);
-                    hideCookieUpload();
-                } else if (result.needs_cookies) {
-                    showStatus("🔐 This video requires authentication. Please upload cookies.", "warning");
-                    showCookieUpload();
-                } else {
-                    showStatus(`❌ Error: ${result.error}`, "error");
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text;
+                if (text.includes('youtube.com') || text.includes('youtu.be')) {
+                    showStatus("✅ YouTube URL detected! Click Download Now to proceed.", "success");
                 }
-            } catch (e) {
-                showStatus(`❌ Error checking video: ${e.message}`, "error");
+            } catch (err) {
+                showStatus("⚠️ Please paste the URL manually (clipboard access denied)", "warning");
             }
         }
 
-        // 📊 Display video information
-        function displayVideoInfo(info) {
-            let infoDiv = document.getElementById("videoInfo");
+        // Show status messages
+        function showStatus(message, type = "info") {
+            const statusDiv = document.getElementById("status");
+            statusDiv.className = `status status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = "block";
             
-            infoDiv.innerHTML = `
-                <h3>📺 ${info.title}</h3>
-                <p><strong>👤 Channel:</strong> ${info.uploader || 'Unknown'}</p>
-                <p><strong>⏱️ Duration:</strong> ${formatDuration(info.duration)}</p>
-                <p><strong>👀 Views:</strong> ${formatNumber(info.view_count)}</p>
-                <p><strong>📅 Upload Date:</strong> ${formatDate(info.upload_date)}</p>
-            `;
-            infoDiv.style.display = "block";
+            if (type === "success" || type === "info") {
+                setTimeout(() => {
+                    statusDiv.style.display = "none";
+                }, 6000);
+            }
         }
 
-        // 🔧 Helper functions for formatting
+        // Update progress
+        function updateProgress(percent, message = "") {
+            const container = document.getElementById("progressContainer");
+            const fill = document.getElementById("progressFill");
+            const text = document.getElementById("progressText");
+            
+            if (percent > 0) {
+                container.style.display = "block";
+                fill.style.width = percent + "%";
+                text.textContent = message || `Processing... ${percent}%`;
+            } else {
+                container.style.display = "none";
+                fill.style.width = "0%";
+            }
+        }
+
+        // Format helper functions
         function formatDuration(seconds) {
             if (!seconds) return 'Unknown';
             const hours = Math.floor(seconds / 3600);
@@ -110,253 +78,275 @@
             return `${day}/${month}/${year}`;
         }
 
-        // 🍪 Show/hide cookie upload section
-        function showCookieUpload() {
-            document.getElementById("cookieUpload").style.display = "block";
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
-        function hideCookieUpload() {
-            document.getElementById("cookieUpload").style.display = "none";
+        // Extract video ID from URL
+        function getVideoId(url) {
+            const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        // 📤 Upload cookies
-        async function uploadCookies() {
-            const fileInput = document.getElementById("cookieFile");
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert("❌ Please select a cookies.txt file!");
-                return;
-            }
-            
-            if (!file.name.endsWith('.txt')) {
-                alert("❌ Please upload a .txt file!");
-                return;
-            }
-            
-            try {
-                showStatus("📤 Uploading cookies...", "info");
-                
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('user_id', 'web_user');
-                
-                const response = await fetch(`${BACKEND_URL}/api/upload_cookies`, {
-                    method: "POST",
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    cookieId = result.cookie_id;
-                    localStorage.setItem('ytd_cookie_id', cookieId);
-                    showStatus("✅ Cookies uploaded successfully!", "success");
-                    document.getElementById('deleteCookieBtn').style.display = 'inline-flex';
-                    hideCookieUpload();
-                    
-                    // Re-check the current URL
-                    const url = document.getElementById("urlInput").value.trim();
-                    if (url) checkVideoUrl(url);
-                } else {
-                    showStatus(`❌ Cookie upload failed: ${result.error}`, "error");
-                }
-            } catch (e) {
-                showStatus(`❌ Error uploading cookies: ${e.message}`, "error");
-            }
-        }
+        // Display video preview
+        function displayVideoPreview(info) {
+            const preview = document.getElementById("videoPreview");
+            const thumbnail = document.getElementById("videoThumbnail");
+            const title = document.getElementById("videoTitle");
+            const uploader = document.getElementById("videoUploader");
+            const duration = document.getElementById("videoDuration");
+            const views = document.getElementById("videoViews");
+            const date = document.getElementById("videoDate");
 
-        // 🗑️ Delete cookies
-        async function deleteCookies() {
-            if (!cookieId) return;
-            
-            try {
-                showStatus("🗑️ Deleting cookies...", "info");
-                
-                const response = await fetch(`${BACKEND_URL}/api/delete_cookie`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        cookie_id: cookieId,
-                        user_id: "web_user"
-                    })
-                });
-                
-                if (response.ok) {
-                    cookieId = null;
-                    localStorage.removeItem('ytd_cookie_id');
-                    showStatus("✅ Cookies deleted successfully!", "success");
-                    document.getElementById('deleteCookieBtn').style.display = 'none';
-                    hideCookieUpload();
-                }
-            } catch (e) {
-                showStatus(`❌ Error deleting cookies: ${e.message}`, "error");
-            }
-        }
-
-        // ❓ Show cookie instructions
-        function showCookieInstructions() {
-            const instructions = `
-🍪 How to Get cookies.txt File:
-
-🌐 Chrome Browser:
-1. Open Chrome and go to youtube.com
-2. Login to your account  
-3. Install "cookies.txt" extension from Chrome Web Store
-4. Click the extension icon → Export → Save as .txt file
-5. Upload that file here
-
-🦊 Firefox Browser:
-1. Go to youtube.com and login
-2. Install "cookies.txt" add-on
-3. Click add-on icon → Export cookies
-4. Save and upload the .txt file
-
-🔧 Manual Method:
-1. Press F12 → Application tab → Cookies → https://youtube.com
-2. Copy cookie data to a .txt file in Netscape format
-3. Upload here
-
-⚠️ Note: Cookies contain your login information, keep them secure!
-            `;
-            
-            alert(instructions);
-        }
-
-        // 📱 Show status messages
-        function showStatus(message, type = "info") {
-            let statusDiv = document.getElementById("status");
-            
-            statusDiv.className = `status status-${type}`;
-            statusDiv.textContent = message;
-            statusDiv.style.display = "block";
-            
-            // Auto-hide success/info messages after 5 seconds
-            if (type === "success" || type === "info") {
-                setTimeout(() => {
-                    statusDiv.style.display = "none";
-                }, 5000);
-            }
-        }
-
-        // 📊 Update progress bar
-        function updateProgress(percent) {
-            const progressBar = document.getElementById("progressBar");
-            const progressFill = document.getElementById("progressFill");
-            
-            if (percent > 0) {
-                progressBar.style.display = "block";
-                progressFill.style.width = percent + "%";
+            if (info.thumbnail) {
+                thumbnail.src = info.thumbnail;
+                thumbnail.style.display = "block";
             } else {
-                progressBar.style.display = "none";
-                progressFill.style.width = "0%";
+                thumbnail.style.display = "none";
+            }
+
+            title.textContent = info.title || 'Unknown Title';
+            uploader.textContent = info.uploader || 'Unknown Channel';
+            duration.textContent = formatDuration(info.duration);
+            views.textContent = formatNumber(info.view_count);
+            date.textContent = formatDate(info.upload_date);
+
+            preview.style.display = "block";
+        }
+
+        // Check video URL
+        async function checkVideo(url) {
+            try {
+                showStatus("🔍 Checking video availability...", "info");
+                updateProgress(20, "Validating URL...");
+                
+                const response = await fetch(`${BACKEND_URL}/api/check_url`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+
+                const result = await response.json();
+                updateProgress(0);
+
+                if (response.ok && result.valid) {
+                    showStatus(`✅ Video found: "${result.title}"`, "success");
+                    displayVideoPreview(result);
+                    return true;
+                } else {
+                    showStatus(`❌ ${result.error || 'Video not accessible'}`, "error");
+                    if (result.suggestion) {
+                        setTimeout(() => {
+                            showStatus(`💡 Suggestion: ${result.suggestion}`, "info");
+                        }, 2000);
+                    }
+                    return false;
+                }
+            } catch (error) {
+                updateProgress(0);
+                showStatus(`❌ Connection error: ${error.message}`, "error");
+                return false;
             }
         }
 
-        // ⬇️ Download Video (Enhanced version)
-        async function downloadVideo() {
-            let url = document.getElementById("urlInput").value.trim();
-            let quality = document.getElementById("quality").value;
-            
-            if (!url) {
-                alert("❌ Please enter a YouTube URL!");
-                return;
-            }
-            
-            // Get download button and disable it
-            const downloadBtn = event.target;
-            const originalText = downloadBtn.textContent;
-            downloadBtn.disabled = true;
-            downloadBtn.textContent = "⏳ Processing...";
-            
+        // Download video
+        async function downloadVideo(url, audioOnly) {
             try {
-                showStatus("🚀 Preparing download...", "info");
-                updateProgress(10);
+                updateProgress(30, "Preparing download...");
                 
-                // Make API call to backend
-                let response = await fetch(`${BACKEND_URL}/api/download_youtube`, {
+                const response = await fetch(`${BACKEND_URL}/api/download_youtube`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/octet-stream"
+                    },
                     body: JSON.stringify({
                         url: url,
                         user_id: "web_user",
-                        cookie_id: cookieId,
-                        audio_only: (quality === "mp3")
+                        audio_only: audioOnly
                     })
                 });
-                
-                updateProgress(30);
-                
+
                 if (!response.ok) {
-                    let err = await response.json();
-                    
-                    if (err.needs_cookies) {
-                        showStatus("🔐 Authentication required. Please upload cookies.", "warning");
-                        showCookieUpload();
-                    } else {
-                        showStatus(`❌ Download failed: ${err.error}`, "error");
-                    }
-                    updateProgress(0);
-                    return;
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
                 }
-                
-                showStatus("📦 Downloading file...", "info");
-                updateProgress(60);
-                
+
+                updateProgress(60, "Downloading file...");
+
                 // Get filename from response headers
                 const contentDisposition = response.headers.get('Content-Disposition');
-                let fileName = "download";
+                let filename = audioOnly ? "audio.mp3" : "video.mp4";
+                
                 if (contentDisposition) {
                     const filenameMatch = contentDisposition.match(/filename="(.+)"/);
                     if (filenameMatch) {
-                        fileName = filenameMatch[1];
+                        filename = decodeURIComponent(filenameMatch[1]);
                     }
-                } else {
-                    fileName = (quality === "mp3") ? "audio.mp3" : "video.mp4";
                 }
+
+                updateProgress(80, "Processing download...");
+
+                // Convert to blob and download
+                const blob = await response.blob();
                 
-                updateProgress(80);
-                
-                // Convert response to blob and trigger download
-                let blob = await response.blob();
-                
-                updateProgress(95);
-                
-                let a = document.createElement("a");
-                a.href = window.URL.createObjectURL(blob);
-                a.download = fileName;
+                if (blob.size === 0) {
+                    throw new Error("Downloaded file is empty");
+                }
+
+                updateProgress(95, "Finalizing...");
+
+                // Create download link
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
-                
-                // Clean up blob URL
-                window.URL.revokeObjectURL(a.href);
-                
-                updateProgress(100);
-                showStatus(`✅ Download completed: ${fileName}`, "success");
+
+                // Cleanup
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(downloadUrl);
+                }, 100);
+
+                updateProgress(100, "Download completed!");
+                showStatus(`✅ Download completed: ${filename} (${formatFileSize(blob.size)})`, "success");
                 
                 setTimeout(() => updateProgress(0), 2000);
                 
-            } catch (e) {
-                showStatus(`❌ Error: ${e.message}`, "error");
+                return true;
+
+            } catch (error) {
                 updateProgress(0);
-                console.error('Download error:', e);
+                
+                let errorMessage = error.message;
+                let suggestion = "";
+
+                // Provide user-friendly error messages
+                if (errorMessage.includes("Failed to fetch")) {
+                    errorMessage = "Cannot connect to download server";
+                    suggestion = "Please check your internet connection and try again";
+                } else if (errorMessage.includes("private") || errorMessage.includes("unavailable")) {
+                    errorMessage = "This video is private or unavailable";
+                    suggestion = "Try downloading a different public video";
+                } else if (errorMessage.includes("copyright") || errorMessage.includes("blocked")) {
+                    errorMessage = "This video is protected by copyright";
+                    suggestion = "The video owner has restricted downloads";
+                } else if (errorMessage.includes("age") || errorMessage.includes("restricted")) {
+                    errorMessage = "Age-restricted content cannot be downloaded";
+                    suggestion = "This video has age verification requirements";
+                }
+
+                showStatus(`❌ Download failed: ${errorMessage}`, "error");
+                
+                if (suggestion) {
+                    setTimeout(() => {
+                        showStatus(`💡 ${suggestion}`, "info");
+                    }, 2000);
+                }
+
+                return false;
+            }
+        }
+
+        // Main process function
+        async function processVideo() {
+            const url = document.getElementById("urlInput").value.trim();
+            const selectedFormat = document.querySelector('input[name="format"]:checked').value;
+            const downloadBtn = document.getElementById("downloadBtn");
+
+            // Validation
+            if (!url) {
+                showStatus("❌ Please enter a YouTube URL", "error");
+                return;
+            }
+
+            if (!url.includes("youtube.com") && !url.includes("youtu.be")) {
+                showStatus("❌ Please enter a valid YouTube URL", "error");
+                return;
+            }
+
+            // Disable button during process
+            downloadBtn.disabled = true;
+            const originalText = downloadBtn.textContent;
+            downloadBtn.textContent = "⏳ Processing...";
+
+            try {
+                // Step 1: Check video
+                const isValidVideo = await checkVideo(url);
+                if (!isValidVideo) {
+                    return;
+                }
+
+                // Step 2: Download video
+                const audioOnly = selectedFormat === "mp3";
+                showStatus(`🚀 Starting ${audioOnly ? 'audio' : 'video'} download...`, "info");
+                
+                await downloadVideo(url, audioOnly);
+
+            } catch (error) {
+                showStatus(`❌ Unexpected error: ${error.message}`, "error");
+                console.error("Process error:", error);
             } finally {
-                // Re-enable download button
+                // Re-enable button
                 downloadBtn.disabled = false;
                 downloadBtn.textContent = originalText;
             }
         }
 
-        // 🎯 Handle Enter key in URL input
-        document.getElementById('urlInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loadVideo();
+        // Auto-check video when URL is pasted
+        let checkTimeout;
+        document.getElementById("urlInput").addEventListener("input", function(e) {
+            const url = e.target.value.trim();
+            
+            // Clear previous timeout
+            clearTimeout(checkTimeout);
+            
+            // Hide preview if URL is cleared
+            if (!url) {
+                document.getElementById("videoPreview").style.display = "none";
+                return;
+            }
+            
+            // Auto-check after user stops typing (debounce)
+            if (url.includes("youtube.com") || url.includes("youtu.be")) {
+                checkTimeout = setTimeout(() => {
+                    checkVideo(url);
+                }, 1000);
             }
         });
 
-        // 📁 Handle file input change
-        document.getElementById('cookieFile').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'Choose cookies.txt file';
-            document.querySelector('.file-input-button').textContent = `📁 ${fileName}`;
+        // Handle Enter key
+        document.getElementById("urlInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                processVideo();
+            }
+        });
+
+        // Test backend connection on load
+        async function testConnection() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("✅ Backend connected:", data);
+                } else {
+                    console.warn("⚠️ Backend health check failed");
+                }
+            } catch (error) {
+                console.error("❌ Backend connection failed:", error);
+                showStatus("⚠️ Server connection issue. Some features may be limited.", "warning");
+            }
+        }
+
+        // Initialize app
+        document.addEventListener("DOMContentLoaded", function() {
+            testConnection();
+            showStatus("🎉 Ready! Paste a YouTube URL to get started.", "info");
         });
