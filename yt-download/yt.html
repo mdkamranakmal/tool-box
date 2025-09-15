@@ -7,29 +7,72 @@
 </head>
 <link rel="stylesheet" href="yt.css">
 <body>
-  <div class="container">
-    <h1>🎬 YouTube Premium Downloader</h1>
-    <div class="input-group">
-      <input type="text" id="urlInput" placeholder="Paste YouTube URL here...">
-      <button onclick="loadVideo()">Load</button>
-    </div>
+   <div class="container">
+        <div class="header">
+            <h1>🎥 YouTube Downloader</h1>
+            <p>Download your favorite YouTube videos instantly</p>
+        </div>
 
-    <div class="options">
-      <label for="quality">Choose Quality:</label>
-      <select id="quality">
-        <option value="144p">144p MP4</option>
-        <option value="360p">360p MP4</option>
-        <option value="720p">720p MP4</option>
-        <option value="1080p">1080p MP4</option>
-        <option value="mp3">MP3 (Audio)</option>
-      </select>
-    </div>
+        <div class="input-group">
+            <label for="urlInput">📎 YouTube URL</label>
+            <input type="text" id="urlInput" placeholder="Paste YouTube URL here..." />
+        </div>
 
-    <div class="video-preview" id="previewBox">
-      <iframe id="videoFrame" src="" frameborder="0" allowfullscreen></iframe>
-      <button class="download-btn" onclick="downloadVideo()">⬇ Download</button>
+        <div id="status" class="status"></div>
+
+        <div class="input-group">
+            <label for="quality">🎯 Download Quality</label>
+            <select id="quality">
+                <option value="mp4">🎬 Video (MP4) - Best Quality</option>
+                <option value="mp3">🎵 Audio Only (MP3) - 192kbps</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="loadVideo()">
+                👀 Preview Video
+            </button>
+            <button class="btn btn-primary" onclick="downloadVideo()">
+                ⬇️ Download Now
+            </button>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="previewBox" class="preview-box">
+            <iframe id="videoFrame" class="video-frame"></iframe>
+            <div id="videoInfo" class="video-info"></div>
+        </div>
+
+        <div id="cookieUpload" class="cookie-upload">
+            <h3>🍪 Authentication Required</h3>
+            <p>This video is private or age-restricted. Please upload your cookies.txt file to access it:</p>
+            
+            <div class="file-input-wrapper">
+                <input type="file" id="cookieFile" class="file-input" accept=".txt" />
+                <div class="file-input-button">
+                    📁 Choose cookies.txt file
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="uploadCookies()">
+                    📤 Upload Cookies
+                </button>
+                <button class="btn btn-secondary" onclick="showCookieInstructions()">
+                    ❓ How to get cookies?
+                </button>
+                <button class="btn btn-danger" onclick="deleteCookies()" id="deleteCookieBtn" style="display:none;">
+                    🗑️ Delete Cookies
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>⚡ Powered by yt-dlp | 🔒 Your data stays private</p>
+        </div>
     </div>
-  </div>
-  <script src="yt.js"></script>
 </body>
 </html>
